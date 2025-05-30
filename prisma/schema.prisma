@@ -16,25 +16,51 @@ datasource db {
 
 model School {
   id           String   @id @default(cuid())
+  code         String   @unique
   name         String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  coursesFrom  Course[] @relation("FromSchool")
-  coursesTo    Course[] @relation("ToSchool")
-  casesFrom    TransferCase[] @relation("FromSchool")
-  casesTo      TransferCase[] @relation("ToSchool")
+  courses      Course[]
+  fromMappings TransferMapping[] @relation("FromSchool")
+  toMappings   TransferMapping[] @relation("ToSchool")
 }
 
 model Course {
   id           String   @id @default(cuid())
-  courseNumber String
+  code         String
   name         String
-  credits      Int
+  credits      Float
+  description  String?
+  school       School   @relation(fields: [schoolId], references: [id])
+  schoolId     String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  fromMappings TransferMapping[] @relation("FromCourse")
+  toMappings   TransferMapping[] @relation("ToCourse")
+
+  @@unique([code, schoolId])
+}
+
+model TransferMapping {
+  id           String   @id @default(cuid())
   fromSchool   School   @relation("FromSchool", fields: [fromSchoolId], references: [id])
   fromSchoolId String
   toSchool     School   @relation("ToSchool", fields: [toSchoolId], references: [id])
   toSchoolId   String
-  cases        TransferCase[]
+  fromCourse   Course   @relation("FromCourse", fields: [fromCourseId], references: [id])
+  fromCourseId String
+  toCourse     Course   @relation("ToCourse", fields: [toCourseId], references: [id])
+  toCourseId   String
+  status       TransferStatus @default(PENDING)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([fromCourseId, toCourseId])
+}
+
+enum TransferStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
