@@ -50,12 +50,16 @@ npm install
 3. 配置环境变量
 创建 `.env` 文件并添加以下配置：
 ```env
-# 数据库
-DATABASE_URL="postgresql://user:password@localhost:5432/transfercredit?schema=public"
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/transferhub?schema=public"
 
 # NextAuth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key-here
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key-here" # 生产环境中使用强随机字符串
+
+# Google OAuth (从 Google Cloud Console 获取)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
 
 # 文件上传 (选择一个)
 # Cloudinary
