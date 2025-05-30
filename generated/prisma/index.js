@@ -160,7 +160,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/suki2cn/Desktop/DAHACKS/generated/prisma",
+      "value": "/Users/suki2cn/Documents/DAHACKS/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -174,11 +174,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/suki2cn/Desktop/DAHACKS/prisma/schema.prisma",
+    "sourceFilePath": "/Users/suki2cn/Documents/DAHACKS/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
   "clientVersion": "6.8.2",

@@ -32,34 +32,29 @@ export default function HomePage() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchResults, setSearchResults] = useState<TransferResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [communityColleges, setCommunityColleges] = useState<{ id: string; name: string }[]>([]);
+  const [universities, setUniversities] = useState<{ id: string; name: string }[]>([]);
 
-  // 社区大学列表
-  const communityColleges = [
-    { id: 'deanza', name: 'De Anza College' },
-    { id: 'foothill', name: 'Foothill College' },
-    { id: 'mission', name: 'Mission College' },
-    { id: 'ohlone', name: 'Ohlone College' },
-    { id: 'laney', name: 'Laney College' },
-    { id: 'berkeley_city', name: 'Berkeley City College' },
-    { id: 'ccsf', name: 'City College of San Francisco' },
-    { id: 'skyline', name: 'Skyline College' },
-    { id: 'canada', name: 'Cañada College' },
-    { id: 'smcc', name: 'Santa Monica College' },
-  ];
-
-  // 目标大学列表
-  const universities = [
-    { id: 'ucla', name: 'University of California, Los Angeles (UCLA)' },
-    { id: 'ucb', name: 'University of California, Berkeley (UCB)' },
-    { id: 'ucsd', name: 'University of California, San Diego (UCSD)' },
-    { id: 'uci', name: 'University of California, Irvine (UCI)' },
-    { id: 'ucd', name: 'University of California, Davis (UCD)' },
-    { id: 'umich', name: 'University of Michigan (UMich)' },
-    { id: 'nyu', name: 'New York University (NYU)' },
-    { id: 'columbia', name: 'Columbia University' },
-    { id: 'stanford', name: 'Stanford University' },
-    { id: 'mit', name: 'Massachusetts Institute of Technology (MIT)' },
-  ];
+  useEffect(() => {
+    const fetchSchools = async () => {
+      try {
+        console.log('Fetching schools...');
+        const response = await fetch('/api/schools');
+        const result = await response.json();
+        console.log('Received data:', result);
+        if (response.ok && result.data) {
+          console.log('Setting schools:', result.data.communityColleges, result.data.universities);
+          setCommunityColleges(result.data.communityColleges || []);
+          setUniversities(result.data.universities || []);
+        } else {
+          console.error('Error fetching schools:', result.error);
+        }
+      } catch (error) {
+        console.error('Error during fetch:', error);
+      }
+    };
+    fetchSchools();
+  }, []);
 
   // 处理搜索
   const handleSearch = async () => {
@@ -139,20 +134,17 @@ export default function HomePage() {
             <div className="w-full">
               <label htmlFor="source-school" className="block text-sm font-medium text-gray-700 mb-1">Step 1: Select Community College</label>
               <div className="relative">
-                <input
+                <select
                   id="source-school"
-                  list="community-colleges"
-                  type="text"
                   value={sourceSchool}
                   onChange={(e) => setSourceSchool(e.target.value)}
-                  placeholder="Search community college..."
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <datalist id="community-colleges">
+                >
+                  <option value="">Select a community college</option>
                   {communityColleges.map((college) => (
-                    <option key={college.id} value={college.name} />
+                    <option key={college.id} value={college.name}>{college.name}</option>
                   ))}
-                </datalist>
+                </select>
               </div>
             </div>
 
@@ -162,20 +154,17 @@ export default function HomePage() {
                 Step 2: Select Target University
               </label>
               <div className="relative">
-                <input
+                <select
                   id="target-school"
-                  list="universities"
-                  type="text"
                   value={targetSchool}
                   onChange={(e) => setTargetSchool(e.target.value)}
-                  placeholder="Search university..."
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <datalist id="universities">
+                >
+                  <option value="">Select a target university</option>
                   {universities.map((uni) => (
-                    <option key={uni.id} value={uni.name} />
+                    <option key={uni.id} value={uni.name}>{uni.name}</option>
                   ))}
-                </datalist>
+                </select>
               </div>
             </div>
 
