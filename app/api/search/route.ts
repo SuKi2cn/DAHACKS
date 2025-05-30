@@ -1,67 +1,63 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { searchParamsSchema } from '@/lib/validations'
+import { buildSchoolSearchQuery, buildCourseSearchQuery, successResponse, errorResponse } from '@/lib/api-utils'
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const query = searchParams.get('query')
-    const fromSchool = searchParams.get('from')
-    const toSchool = searchParams.get('to')
+    const { searchParams } = request.nextUrl
+    const params = searchParamsSchema.parse({
+      query: searchParams.get('query'),
+      fromSchool: searchParams.get('from'),
+      toSchool: searchParams.get('to'),
+      page: searchParams.get('page'),
+      limit: searchParams.get('limit'),
+    })
 
-    // Build where clause
     const where: any = {}
+    const skip = (params.page - 1) * params.limit
 
-    if (fromSchool) {
-      where.fromCourse = {
-        school: {
-          OR: [
-            { name: { contains: fromSchool, mode: 'insensitive' } },
-            { code: { contains: fromSchool, mode: 'insensitive' } }
-          ]
-        }
-      }
+    if (params.fromSchool) {
+      where.fromSchool = buildSchoolSearchQuery(params.fromSchool)
     }
 
-    if (toSchool) {
-      where.toCourse = {
-        school: {
-          OR: [
-            { name: { contains: toSchool, mode: 'insensitive' } },
-            { code: { contains: toSchool, mode: 'insensitive' } }
-          ]
-        }
-      }
+    if (params.toSchool) {
+      where.toSchool = buildSchoolSearchQuery(params.toSchool)
     }
 
-    if (query) {
+    if (params.query) {
       where.OR = [
-        { fromCourse: { code: { contains: query, mode: 'insensitive' } } },
-        { fromCourse: { name: { contains: query, mode: 'insensitive' } } },
-        { toCourse: { code: { contains: query, mode: 'insensitive' } } },
-        { toCourse: { name: { contains: query, mode: 'insensitive' } } }
+        { fromCourse: buildCourseSearchQuery(params.query) },
+        { toCourse: buildCourseSearchQuery(params.query) }
       ]
     }
 
-    const mappings = await prisma.transferMapping.findMany({
-      where,
-      include: {
-        fromCourse: {
-          include: {
-            school: true
-          }
+    const [mappings, total] = await Promise.all([
+      prisma.transferMapping.findMany({
+        where,
+        include: {
+          fromSchool: true,
+          toSchool: true,
+          fromCourse: true,
+          toCourse: true
         },
-        toCourse: {
-          include: {
-            school: true
-          }
-        }
-      },
-      take: 50
-    })
+        skip,
+        take: params.limit,
+        orderBy: { updatedAt: 'desc' }
+      }),
+      prisma.transferMapping.count({ where })
+    ])
 
-    return NextResponse.json({ mappings })
+    return successResponse({
+      mappings,
+      pagination: {
+        total,
+        page: params.page,
+        limit: params.limit,
+        totalPages: Math.ceil(total / params.limit)
+      }
+    })
   } catch (error) {
-    console.error('Search error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse(error)
   }
 } 
