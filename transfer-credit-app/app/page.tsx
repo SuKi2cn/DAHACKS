@@ -143,10 +143,15 @@ export default function HomePage() {
           </nav>
           {/* User Area */}
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-3 py-1 rounded hover:bg-gray-100">
-              <span className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-bold">U</span>
-              <span className="hidden md:inline">Username</span>
-            </button>
+            <Link href="/auth/login" className="text-gray-700 hover:text-gray-900">
+              Sign in
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+            >
+              Sign up
+            </Link>
           </div>
         </div>
       </header>
