@@ -34,6 +34,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [communityColleges, setCommunityColleges] = useState<{ id: string; name: string }[]>([]);
   const [universities, setUniversities] = useState<{ id: string; name: string }[]>([]);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchSchools = async () => {
@@ -56,6 +57,12 @@ export default function HomePage() {
     fetchSchools();
   }, []);
 
+  // 处理课程号输入变化
+  const handleCourseNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase();
+    setCourseNumber(value);
+  };
+
   // 处理搜索
   const handleSearch = async () => {
     if (!sourceSchool) {
@@ -74,7 +81,6 @@ export default function HomePage() {
       const params = new URLSearchParams({
         fromSchool: sourceSchool,
         toSchool: targetSchool,
-        ...(courseNumber && { courseNumber }),
       });
 
       const response = await fetch(`/api/transfer?${params}`);
@@ -177,9 +183,9 @@ export default function HomePage() {
                 id="course-number"
                 type="text"
                 value={courseNumber}
-                onChange={(e) => setCourseNumber(e.target.value)}
-                placeholder="Enter course number (e.g. MATH 22)"
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={handleCourseNumberChange}
+                placeholder="Enter course code (e.g. MATH 22)"
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
               />
             </div>
 
