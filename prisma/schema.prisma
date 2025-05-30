@@ -13,3 +13,28 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model School {
+  id           String   @id @default(cuid())
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  coursesFrom  Course[] @relation("FromSchool")
+  coursesTo    Course[] @relation("ToSchool")
+  casesFrom    TransferCase[] @relation("FromSchool")
+  casesTo      TransferCase[] @relation("ToSchool")
+}
+
+model Course {
+  id           String   @id @default(cuid())
+  courseNumber String
+  name         String
+  credits      Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  fromSchool   School   @relation("FromSchool", fields: [fromSchoolId], references: [id])
+  fromSchoolId String
+  toSchool     School   @relation("ToSchool", fields: [toSchoolId], references: [id])
+  toSchoolId   String
+  cases        TransferCase[]
+}
