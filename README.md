@@ -27,8 +27,6 @@ A modern web application that helps students navigate the complex process of tra
 
 1. **Clone and Install**
 ```bash
-git clone https://github.com/yourusername/transfer-credit-app.git
-cd transfer-credit-app
 npm install
 ```
 
