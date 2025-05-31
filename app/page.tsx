@@ -280,21 +280,13 @@ export default function HomePage() {
                               <h4 className="text-sm font-medium text-gray-700">Source Course</h4>
                               <p className="text-sm text-gray-900">{result.fromCourse.name}</p>
                               <p className="text-sm text-gray-600">{result.fromSchool.name}</p>
-                              <p className="text-sm text-gray-600">{result.fromCourse.credits} credits</p>
                             </div>
                             <div>
                               <h4 className="text-sm font-medium text-gray-700">Target Course</h4>
                               <p className="text-sm text-gray-900">{result.toCourse.name}</p>
                               <p className="text-sm text-gray-600">{result.toSchool.name}</p>
-                              <p className="text-sm text-gray-600">{result.toCourse.credits} credits</p>
                             </div>
                           </div>
-                          {result.notes && (
-                            <div>
-                              <h4 className="text-sm font-medium text-gray-700">Notes</h4>
-                              <p className="text-sm text-gray-600">{result.notes}</p>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
