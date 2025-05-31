@@ -7,7 +7,6 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Fetching schools from database...');
     const schools = await prisma.school.findMany({
       select: {
         id: true,
@@ -20,28 +19,19 @@ export async function GET(request: NextRequest) {
       }
     });
     
-    console.log('Raw schools data:', schools);
-    
-    // 将学校列表分为社区大学和目标大学
     const communityColleges = schools.filter(school => school.type === 'COMMUNITY_COLLEGE');
     const universities = schools.filter(school => school.type === 'UNIVERSITY');
     
-    console.log('Filtered community colleges:', communityColleges);
-    console.log('Filtered universities:', universities);
-    
-    const response = {
+    return NextResponse.json({
       data: {
         communityColleges,
         universities
       }
-    };
-    
-    console.log('Final response:', response);
-    return NextResponse.json(response);
+    });
   } catch (error) {
-    console.error('Detailed error in GET /api/schools:', error);
+    console.error('Error in GET /api/schools:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch schools', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to fetch schools' },
       { status: 500 }
     );
   }

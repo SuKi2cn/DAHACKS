@@ -40,30 +40,27 @@ export default function HomePage() {
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        console.log('Fetching schools from frontend...');
         const response = await fetch('/api/schools');
-        console.log('API Response status:', response.status);
-        
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`Failed to fetch schools: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('Raw API response:', data);
-        
         if (data.data) {
-          console.log('Setting community colleges:', data.data.communityColleges);
-          console.log('Setting universities:', data.data.universities);
           setCommunityColleges(data.data.communityColleges || []);
           setUniversities(data.data.universities || []);
         } else {
-          console.error('No data property in API response');
+          setError('Invalid response format from server');
         }
       } catch (error) {
-        console.error('Detailed error fetching schools:', error);
+        console.error('Error fetching schools:', error);
         setError('Failed to load schools. Please try again later.');
+      } finally {
+        setIsLoading(false);
       }
     };
+
+    setIsLoading(true);
     fetchSchools();
   }, []);
 
@@ -110,6 +107,43 @@ export default function HomePage() {
     }
   };
 
+  const renderSchoolSelect = (
+    id: string,
+    label: string,
+    value: string,
+    onChange: (value: string) => void,
+    options: Array<{ id: string; name: string }>,
+    placeholder: string
+  ) => (
+    <div className="w-full">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={isLoading}
+        >
+          <option value="">{placeholder}</option>
+          {options.length > 0 ? (
+            options.map((option) => (
+              <option key={option.id} value={option.name}>
+                {option.name}
+              </option>
+            ))
+          ) : (
+            <option value="" disabled>
+              {isLoading ? "Loading schools..." : "No schools available"}
+            </option>
+          )}
+        </select>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
@@ -146,75 +180,31 @@ export default function HomePage() {
         {/* Search Panel */}
         <section className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="flex flex-col gap-4">
-            {/* Source School Search Input */}
-            <div className="w-full">
-              <label htmlFor="source-school" className="block text-sm font-medium text-gray-700 mb-1">
-                Step 1: Select Community College
-              </label>
-              <div className="relative">
-                <select
-                  id="source-school"
-                  value={sourceSchool}
-                  onChange={(e) => setSourceSchool(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={isLoading}
-                >
-                  <option value="">Select a community college</option>
-                  {communityColleges.length > 0 ? (
-                    communityColleges.map((college) => (
-                      <option key={college.id} value={college.name}>
-                        {college.name}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      {isLoading ? "Loading schools..." : "No schools available"}
-                    </option>
-                  )}
-                </select>
-                {error && (
-                  <p className="mt-2 text-sm text-red-600">
-                    {error}
-                  </p>
-                )}
+            {error && (
+              <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
               </div>
-            </div>
+            )}
 
-            {/* Target School Search Input */}
-            <div className="w-full">
-              <label htmlFor="target-school" className="block text-sm font-medium text-gray-700 mb-1">
-                Step 2: Select Target University
-              </label>
-              <div className="relative">
-                <select
-                  id="target-school"
-                  value={targetSchool}
-                  onChange={(e) => setTargetSchool(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={isLoading}
-                >
-                  <option value="">Select a target university</option>
-                  {universities.length > 0 ? (
-                    universities.map((uni) => (
-                      <option key={uni.id} value={uni.name}>
-                        {uni.name}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      {isLoading ? "Loading schools..." : "No schools available"}
-                    </option>
-                  )}
-                </select>
-                {error && (
-                  <p className="mt-2 text-sm text-red-600">
-                    {error}
-                  </p>
-                )}
-              </div>
-            </div>
+            {renderSchoolSelect(
+              'source-school',
+              'Step 1: Select Community College',
+              sourceSchool,
+              setSourceSchool,
+              communityColleges,
+              'Select a community college'
+            )}
 
-            {/* Course Number Input (Optional) */}
+            {renderSchoolSelect(
+              'target-school',
+              'Step 2: Select Target University',
+              targetSchool,
+              setTargetSchool,
+              universities,
+              'Select a target university'
+            )}
+
+            {/* Course Number Input */}
             <div className="w-full">
               <label htmlFor="course-number" className="block text-sm font-medium text-gray-700 mb-1">
                 Step 3: Enter Course Number (Optional)
@@ -226,6 +216,7 @@ export default function HomePage() {
                 onChange={handleCourseNumberChange}
                 placeholder="Enter course code (e.g. MATH 22)"
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                disabled={isLoading}
               />
             </div>
 
@@ -236,7 +227,7 @@ export default function HomePage() {
                 disabled={!sourceSchool || !targetSchool || isLoading}
                 className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white font-semibold rounded shadow hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Searching...' : 'Search'}
+                {isLoading ? 'Loading...' : 'Search'}
               </button>
             </div>
           </div>

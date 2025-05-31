@@ -1,3 +1,123 @@
+# TransferHub
+
+A modern web application that helps community college students navigate the complex process of transferring course credits to universities.
+
+## Features
+
+- **Open Access**: Browse transfer credit information without requiring an account
+- **Course Mapping**: Comprehensive database of course equivalencies between institutions
+- **User Contributions**: Registered users can submit new transfer credit experiences
+- **Verification System**: All submissions are verified by administrators
+- **Real-time Updates**: Stay informed about the latest transfer credit mappings
+- **Smart Search**: Find course equivalencies by college, university, or course code
+- **Modern UI**: Clean and responsive interface built with Tailwind CSS
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Authentication**: NextAuth.js with Google OAuth
+- **State Management**: React Hooks
+- **Type Safety**: TypeScript throughout the codebase
+
+## Prerequisites
+
+- Node.js 18+
+- PostgreSQL 14+
+- npm or yarn
+
+## Getting Started
+
+1. **Clone and Install**
+```bash
+git clone https://github.com/yourusername/transferhub.git
+cd transferhub
+npm install
+```
+
+2. **Set up Environment**
+   - Copy `.env.example` to `.env`
+   - Update the values in `.env` with your configuration:
+```env
+# Database
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/transferhub?schema=public"
+
+# NextAuth.js
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret"
+
+# OAuth (Optional - for Google Sign-in)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+```
+
+3. **Database Setup**
+```bash
+# Create database and apply schema
+npm run db:push
+
+# Seed the database with initial data
+npm run db:seed
+```
+
+4. **Start Development Server**
+```bash
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000)
+
+## Project Structure
+
+```
+├── app/                  # Next.js app directory
+│   ├── api/             # API routes
+│   ├── auth/            # Authentication pages
+│   ├── components/      # Shared components
+│   └── ...             # Page routes
+├── lib/                 # Utilities and services
+│   ├── prisma.ts       # Prisma client
+│   ├── validations.ts  # Zod schemas
+│   └── ...             # Other utilities
+├── prisma/             # Database
+│   ├── schema.prisma   # Database schema
+│   └── seed.ts        # Seed data
+└── types/              # TypeScript types
+```
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run db:push` - Push schema changes to database
+- `npm run db:migrate` - Create and apply migrations
+- `npm run db:studio` - Open Prisma Studio
+- `npm run db:seed` - Seed database with initial data
+
+### Database Management
+
+The application uses Prisma as the ORM with PostgreSQL. Initial data includes:
+- Community Colleges: De Anza College, Foothill College
+- Universities: University of Michigan
+- Sample course mappings between these institutions
+
+### Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 # Transfer Credit App
 
 A modern web application that helps students navigate the complex process of transferring course credits between educational institutions.
@@ -90,79 +210,3 @@ Visit [http://localhost:3000](http://localhost:3000)
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-# TransferHub
-
-A course transfer system for community college students.
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- PostgreSQL 14+
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/transferhub.git
-cd transferhub
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Set up environment variables:
-   - Copy `.env.example` to `.env`
-   - Update the values in `.env` with your configuration:
-     - `DATABASE_URL`: Your PostgreSQL connection string
-     - `NEXTAUTH_SECRET`: A random string for session encryption
-     - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Your Google OAuth credentials
-
-4. Set up the database:
-```bash
-# Create database and apply migrations
-npm run db:push
-
-# Seed the database with initial data
-npm run db:seed
-```
-
-5. Start the development server:
-```bash
-npm run dev
-```
-
-The application will be available at http://localhost:3000.
-
-## Development
-
-### Database Management
-
-- `npm run db:push` - Push schema changes to the database
-- `npm run db:migrate` - Create and apply migrations
-- `npm run db:studio` - Open Prisma Studio to manage data
-- `npm run db:seed` - Seed the database with initial data
-
-### Environment Variables
-
-The following environment variables are required:
-
-```env
-# Database
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/transferhub?schema=public"
-
-# NextAuth.js
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-nextauth-secret"
-
-# OAuth
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-```
-
-Make sure to update these values in your `.env` file.
