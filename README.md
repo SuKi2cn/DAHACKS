@@ -1,4 +1,4 @@
-# Transfer Credit App
+# TransferHub
 
 A modern web application that helps students navigate the complex process of transferring course credits between educational institutions.
 
