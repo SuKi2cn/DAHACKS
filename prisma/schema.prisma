@@ -7,10 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  MODERATOR
+  USER
+}
+
+enum TransferStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SchoolType {
+  COMMUNITY_COLLEGE
+  UNIVERSITY
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          UserRole  @default(USER)
+  college       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  contributions TransferMapping[]
+}
+
 model School {
   id           String            @id @default(cuid())
   code         String            @unique
   name         String
+  type         SchoolType        @default(COMMUNITY_COLLEGE)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   courses      Course[]
@@ -44,16 +74,12 @@ model TransferMapping {
   notes        String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  fromCourse   Course         @relation("FromCourse", fields: [fromCourseId], references: [id])
   fromSchool   School         @relation("FromSchool", fields: [fromSchoolId], references: [id])
-  toCourse     Course         @relation("ToCourse", fields: [toCourseId], references: [id])
   toSchool     School         @relation("ToSchool", fields: [toSchoolId], references: [id])
+  fromCourse   Course         @relation("FromCourse", fields: [fromCourseId], references: [id])
+  toCourse     Course         @relation("ToCourse", fields: [toCourseId], references: [id])
+  contributor  User?          @relation(fields: [contributorId], references: [id])
+  contributorId String?
 
   @@unique([fromCourseId, toCourseId])
-}
-
-enum TransferStatus {
-  PENDING
-  APPROVED
-  REJECTED
 }

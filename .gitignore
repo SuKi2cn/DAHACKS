@@ -22,11 +22,6 @@ next-env.d.ts
 # misc
 .DS_Store
 *.pem
-.env*.local
-.env
-.env.development
-.env.test
-.env.production
 
 # debug
 npm-debug.log*
@@ -34,7 +29,12 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
+.env.development
+.env.test
+.env.production
+!.env.example
 
 # vercel
 .vercel
@@ -60,7 +60,6 @@ Thumbs.db
 
 # Prisma
 /prisma/*.db
-/prisma/migrations/
 /generated/
 
 # Logs

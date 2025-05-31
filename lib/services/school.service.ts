@@ -1,28 +1,30 @@
 import { prisma } from '../prisma'
 import { formatSchoolCode } from '../utils'
-import type { School } from '../../generated/prisma'
+import { Prisma, School } from '@prisma/client'
 
 export async function findSchools(query?: string) {
-  const where = query ? {
-    OR: [
-      { name: { contains: query, mode: 'insensitive' } },
-      { code: { contains: query, mode: 'insensitive' } }
-    ]
-  } : {}
+  try {
+    const where = query ? {
+      OR: [
+        { name: { contains: query, mode: 'insensitive' as Prisma.QueryMode } },
+        { code: { contains: query, mode: 'insensitive' as Prisma.QueryMode } }
+      ]
+    } : {}
 
-  return prisma.school.findMany({
-    where,
-    orderBy: { name: 'asc' },
-    include: {
-      _count: {
-        select: {
-          courses: true,
-          fromMappings: true,
-          toMappings: true
-        }
-      }
-    }
-  })
+    return await prisma.school.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        type: true
+      },
+      orderBy: { name: 'asc' }
+    })
+  } catch (error) {
+    console.error('Error in findSchools:', error);
+    throw error;
+  }
 }
 
 export async function findSchoolById(id: string) {

@@ -35,23 +35,33 @@ export default function HomePage() {
   const [communityColleges, setCommunityColleges] = useState<{ id: string; name: string }[]>([]);
   const [universities, setUniversities] = useState<{ id: string; name: string }[]>([]);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        console.log('Fetching schools...');
+        console.log('Fetching schools from frontend...');
         const response = await fetch('/api/schools');
-        const result = await response.json();
-        console.log('Received data:', result);
-        if (response.ok && result.data) {
-          console.log('Setting schools:', result.data.communityColleges, result.data.universities);
-          setCommunityColleges(result.data.communityColleges || []);
-          setUniversities(result.data.universities || []);
+        console.log('API Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Raw API response:', data);
+        
+        if (data.data) {
+          console.log('Setting community colleges:', data.data.communityColleges);
+          console.log('Setting universities:', data.data.universities);
+          setCommunityColleges(data.data.communityColleges || []);
+          setUniversities(data.data.universities || []);
         } else {
-          console.error('Error fetching schools:', result.error);
+          console.error('No data property in API response');
         }
       } catch (error) {
-        console.error('Error during fetch:', error);
+        console.error('Detailed error fetching schools:', error);
+        setError('Failed to load schools. Please try again later.');
       }
     };
     fetchSchools();
@@ -138,19 +148,35 @@ export default function HomePage() {
           <div className="flex flex-col gap-4">
             {/* Source School Search Input */}
             <div className="w-full">
-              <label htmlFor="source-school" className="block text-sm font-medium text-gray-700 mb-1">Step 1: Select Community College</label>
+              <label htmlFor="source-school" className="block text-sm font-medium text-gray-700 mb-1">
+                Step 1: Select Community College
+              </label>
               <div className="relative">
                 <select
                   id="source-school"
                   value={sourceSchool}
                   onChange={(e) => setSourceSchool(e.target.value)}
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoading}
                 >
                   <option value="">Select a community college</option>
-                  {communityColleges.map((college) => (
-                    <option key={college.id} value={college.name}>{college.name}</option>
-                  ))}
+                  {communityColleges.length > 0 ? (
+                    communityColleges.map((college) => (
+                      <option key={college.id} value={college.name}>
+                        {college.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>
+                      {isLoading ? "Loading schools..." : "No schools available"}
+                    </option>
+                  )}
                 </select>
+                {error && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {error}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -165,12 +191,26 @@ export default function HomePage() {
                   value={targetSchool}
                   onChange={(e) => setTargetSchool(e.target.value)}
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoading}
                 >
                   <option value="">Select a target university</option>
-                  {universities.map((uni) => (
-                    <option key={uni.id} value={uni.name}>{uni.name}</option>
-                  ))}
+                  {universities.length > 0 ? (
+                    universities.map((uni) => (
+                      <option key={uni.id} value={uni.name}>
+                        {uni.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>
+                      {isLoading ? "Loading schools..." : "No schools available"}
+                    </option>
+                  )}
                 </select>
+                {error && (
+                  <p className="mt-2 text-sm text-red-600">
+                    {error}
+                  </p>
+                )}
               </div>
             </div>
 

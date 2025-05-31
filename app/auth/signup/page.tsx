@@ -1,23 +1,54 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
+interface School {
+  id: string;
+  name: string;
+  code: string;
+}
+
 export default function SignUpPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    name: '',
     college: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [communityColleges, setCommunityColleges] = useState<School[]>([]);
+  const [isLoadingSchools, setIsLoadingSchools] = useState(true);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const fetchSchools = async () => {
+      try {
+        setIsLoadingSchools(true);
+        const response = await fetch('/api/schools');
+        if (!response.ok) {
+          throw new Error('Failed to fetch schools');
+        }
+        const data = await response.json();
+        if (data.data?.communityColleges) {
+          setCommunityColleges(data.data.communityColleges);
+        }
+      } catch (error) {
+        console.error('Error fetching schools:', error);
+        setError('Failed to load schools');
+      } finally {
+        setIsLoadingSchools(false);
+      }
+    };
+    fetchSchools();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -36,40 +67,38 @@ export default function SignUpPage() {
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          college: formData.college,
-        }),
+          college: formData.college
+        })
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create account');
-      }
+      if (response.ok) {
+        // 注册成功后自动登录
+        const result = await signIn('credentials', {
+          redirect: false,
+          email: formData.email,
+          password: formData.password
+        });
 
-      // 注册成功后自动登录
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (result?.error) {
-        setError('Failed to sign in after registration');
+        if (result?.error) {
+          setError('Failed to sign in after registration');
+        } else {
+          router.push('/profile');
+          router.refresh();
+        }
       } else {
-        router.push('/');
-        router.refresh();
+        setError(data.error || 'Failed to create account');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      setError('An error occurred during sign up');
     } finally {
       setIsLoading(false);
     }
@@ -77,9 +106,11 @@ export default function SignUpPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signIn('google', { callbackUrl: '/' });
+      setIsGoogleLoading(true);
+      await signIn('google', { callbackUrl: '/profile' });
     } catch (err) {
       setError('Failed to sign in with Google');
+      setIsGoogleLoading(false);
     }
   };
 
@@ -94,19 +125,18 @@ export default function SignUpPage() {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
-          <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-            sign in to your existing account
+          <Link href="/auth/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            sign in to your account
           </Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {/* Google Sign In Button */}
           <button
             onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full flex justify-center items-center gap-3 py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isGoogleLoading}
+            className="w-full flex justify-center items-center gap-3 py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed mb-6"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -126,7 +156,7 @@ export default function SignUpPage() {
                 fill="#EA4335"
               />
             </svg>
-            Continue with Google
+            {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
           </button>
 
           <div className="relative my-6">
@@ -140,25 +170,26 @@ export default function SignUpPage() {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                {error}
+              <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span className="block sm:inline">{error}</span>
               </div>
             )}
 
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
+                Full name
               </label>
               <div className="mt-1">
                 <input
                   id="name"
                   name="name"
                   type="text"
+                  autoComplete="name"
                   required
                   disabled={isLoading}
                   value={formData.name}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -177,25 +208,7 @@ export default function SignUpPage() {
                   disabled={isLoading}
                   value={formData.email}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="college" className="block text-sm font-medium text-gray-700">
-                Current College/University
-              </label>
-              <div className="mt-1">
-                <input
-                  id="college"
-                  name="college"
-                  type="text"
-                  required
-                  disabled={isLoading}
-                  value={formData.college}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -214,14 +227,14 @@ export default function SignUpPage() {
                   disabled={isLoading}
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
+                Confirm password
               </label>
               <div className="mt-1">
                 <input
@@ -233,8 +246,35 @@ export default function SignUpPage() {
                   disabled={isLoading}
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="college" className="block text-sm font-medium text-gray-700">
+                Current Community College
+              </label>
+              <div className="mt-1">
+                <select
+                  id="college"
+                  name="college"
+                  required
+                  disabled={isLoading || isLoadingSchools}
+                  value={formData.college}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">Select a community college</option>
+                  {!isLoadingSchools && communityColleges.map((college) => (
+                    <option key={college.id} value={college.name}>
+                      {college.name}
+                    </option>
+                  ))}
+                </select>
+                {isLoadingSchools && (
+                  <div className="mt-2 text-sm text-gray-500">Loading schools...</div>
+                )}
               </div>
             </div>
 
@@ -242,25 +282,12 @@ export default function SignUpPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? 'Creating account...' : 'Create account'}
               </button>
             </div>
           </form>
-
-          <div className="mt-6">
-            <p className="text-xs text-center text-gray-500">
-              By creating an account, you agree to our{' '}
-              <Link href="/terms" className="text-blue-600 hover:text-blue-500">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
-                Privacy Policy
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>
