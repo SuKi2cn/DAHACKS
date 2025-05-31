@@ -93,76 +93,117 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 # TransferHub
 
-A course transfer system for community college students.
+TransferHub is a modern web application designed to streamline the process of transferring credits between community colleges and universities. It helps students and academic advisors track and manage course transfer mappings efficiently.
+
+## Features
+
+- 🔐 **Authentication**
+  - Google OAuth integration
+  - Secure user authentication
+  - Role-based access control (Admin, Moderator, User)
+
+- 🏫 **School Management**
+  - Support for both community colleges and universities
+  - Comprehensive course catalog management
+  - School-specific course codes and credits
+
+- 📚 **Course Transfer System**
+  - Track transfer mappings between institutions
+  - Status tracking (Pending, Approved, Rejected)
+  - Detailed course information and descriptions
+  - Credit hour management
+
+- 👥 **User Features**
+  - User profiles with institution affiliations
+  - Contribution tracking for transfer mappings
+  - Role-based permissions and access
+
+## Tech Stack
+
+- **Frontend**
+  - Next.js 14
+  - TypeScript
+  - Tailwind CSS
+  - NextAuth.js
+
+- **Backend**
+  - Next.js API Routes
+  - Prisma ORM
+  - PostgreSQL Database
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL 14+
-- npm or yarn
+- Node.js 18.x or later
+- PostgreSQL database
+- Google OAuth credentials
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/transferhub"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+NEXTAUTH_SECRET="your-nextauth-secret"
+NEXTAUTH_URL="http://localhost:3000"
+```
 
 ### Installation
 
 1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/transferhub.git
-cd transferhub
-```
+   ```bash
+   git clone https://github.com/yourusername/transferhub.git
+   cd transferhub
+   ```
 
 2. Install dependencies:
-```bash
-npm install
+   ```bash
+   npm install
+   ```
+
+3. Set up the database:
+   ```bash
+   npx prisma migrate dev
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+The application will be available at `http://localhost:3000`.
+
+## Project Structure
+
+```
+transferhub/
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication pages
+│   └── (routes)/          # Application routes
+├── components/            # React components
+├── lib/                   # Utility functions and configurations
+├── prisma/               # Database schema and migrations
+└── public/               # Static assets
 ```
 
-3. Set up environment variables:
-   - Copy `.env.example` to `.env`
-   - Update the values in `.env` with your configuration:
-     - `DATABASE_URL`: Your PostgreSQL connection string
-     - `NEXTAUTH_SECRET`: A random string for session encryption
-     - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Your Google OAuth credentials
+## Contributing
 
-4. Set up the database:
-```bash
-# Create database and apply migrations
-npm run db:push
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-# Seed the database with initial data
-npm run db:seed
-```
+## License
 
-5. Start the development server:
-```bash
-npm run dev
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-The application will be available at http://localhost:3000.
+## Acknowledgments
 
-## Development
-
-### Database Management
-
-- `npm run db:push` - Push schema changes to the database
-- `npm run db:migrate` - Create and apply migrations
-- `npm run db:studio` - Open Prisma Studio to manage data
-- `npm run db:seed` - Seed the database with initial data
-
-### Environment Variables
-
-The following environment variables are required:
-
-```env
-# Database
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/transferhub?schema=public"
-
-# NextAuth.js
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-nextauth-secret"
-
-# OAuth
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-```
-
-Make sure to update these values in your `.env` file.
+- Next.js team for the amazing framework
+- Prisma team for the excellent ORM
+- All contributors who have helped shape this project
