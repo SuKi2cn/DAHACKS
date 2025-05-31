@@ -90,3 +90,79 @@ Visit [http://localhost:3000](http://localhost:3000)
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+# TransferHub
+
+A course transfer system for community college students.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL 14+
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/transferhub.git
+cd transferhub
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment variables:
+   - Copy `.env.example` to `.env`
+   - Update the values in `.env` with your configuration:
+     - `DATABASE_URL`: Your PostgreSQL connection string
+     - `NEXTAUTH_SECRET`: A random string for session encryption
+     - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Your Google OAuth credentials
+
+4. Set up the database:
+```bash
+# Create database and apply migrations
+npm run db:push
+
+# Seed the database with initial data
+npm run db:seed
+```
+
+5. Start the development server:
+```bash
+npm run dev
+```
+
+The application will be available at http://localhost:3000.
+
+## Development
+
+### Database Management
+
+- `npm run db:push` - Push schema changes to the database
+- `npm run db:migrate` - Create and apply migrations
+- `npm run db:studio` - Open Prisma Studio to manage data
+- `npm run db:seed` - Seed the database with initial data
+
+### Environment Variables
+
+The following environment variables are required:
+
+```env
+# Database
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/transferhub?schema=public"
+
+# NextAuth.js
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret"
+
+# OAuth
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+```
+
+Make sure to update these values in your `.env` file.

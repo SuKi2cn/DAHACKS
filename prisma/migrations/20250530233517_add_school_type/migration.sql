@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "SchoolType" AS ENUM ('COMMUNITY_COLLEGE', 'UNIVERSITY');
+
+-- AlterTable
+ALTER TABLE "School" ADD COLUMN     "type" "SchoolType" NOT NULL DEFAULT 'COMMUNITY_COLLEGE';

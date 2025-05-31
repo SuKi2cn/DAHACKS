@@ -1,73 +1,72 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient, SchoolType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  try {
-    // Create De Anza College
-    const deAnza = await prisma.school.create({
-      data: {
-        code: 'DEANZA',
-        name: 'De Anza College',
-      },
-    });
+  // 清理现有数据
+  await prisma.transferMapping.deleteMany();
+  await prisma.course.deleteMany();
+  await prisma.school.deleteMany();
+  await prisma.user.deleteMany();
 
-    console.log('Created De Anza College:', deAnza);
+  // 创建社区大学
+  const deAnza = await prisma.school.create({
+    data: {
+      name: 'De Anza College',
+      code: 'DAC',
+      type: SchoolType.COMMUNITY_COLLEGE
+    }
+  });
 
-    // Create University of Michigan
-    const umich = await prisma.school.create({
-      data: {
-        code: 'UMICH',
-        name: 'University of Michigan',
-      },
-    });
+  const foothill = await prisma.school.create({
+    data: {
+      name: 'Foothill College',
+      code: 'FHC',
+      type: SchoolType.COMMUNITY_COLLEGE
+    }
+  });
 
-    console.log('Created University of Michigan:', umich);
+  // 创建大学
+  const umich = await prisma.school.create({
+    data: {
+      name: 'University of Michigan',
+      code: 'UMICH',
+      type: SchoolType.UNIVERSITY
+    }
+  });
 
-    // Create De Anza's MATH 22 course
-    const deAnzaMath22 = await prisma.course.create({
-      data: {
-        code: 'MATH 22',
-        name: 'Discrete Mathematics',
-        credits: 5,
-        description: 'Elements of discrete mathematics with applications to computer science. Topics include methods of proof, mathematical induction, logic, sets, relations, graphs, combinatorics, and Boolean algebra.',
-        schoolId: deAnza.id,
-      },
-    });
+  // 创建课程
+  const deAnzaCIS22C = await prisma.course.create({
+    data: {
+      code: 'CIS 22C',
+      name: 'Data Abstraction & Struct',
+      credits: 4.5,
+      schoolId: deAnza.id
+    }
+  });
 
-    console.log('Created De Anza MATH 22:', deAnzaMath22);
+  const umichEECS183 = await prisma.course.create({
+    data: {
+      code: 'EECS 183',
+      name: 'Elem Prog Concepts',
+      credits: 4,
+      schoolId: umich.id
+    }
+  });
 
-    // Create UMich's EECS 203 course
-    const umichEECS203 = await prisma.course.create({
-      data: {
-        code: 'EECS 203',
-        name: 'Discrete Mathematics',
-        credits: 4,
-        description: 'Introduction to the mathematical foundations of computer science. Topics covered include: propositional and predicate logic, set theory, function and relations, growth of functions and asymptotic notation, introduction to algorithms, elementary combinatorics, and graph theory.',
-        schoolId: umich.id,
-      },
-    });
+  // 创建课程映射
+  await prisma.transferMapping.create({
+    data: {
+      fromSchoolId: deAnza.id,
+      toSchoolId: umich.id,
+      fromCourseId: deAnzaCIS22C.id,
+      toCourseId: umichEECS183.id,
+      status: 'APPROVED',
+      notes: 'Both courses cover fundamental programming concepts and data structures.'
+    }
+  });
 
-    console.log('Created UMich EECS 203:', umichEECS203);
-
-    // Create transfer mapping
-    const mapping = await prisma.transferMapping.create({
-      data: {
-        fromSchoolId: deAnza.id,
-        toSchoolId: umich.id,
-        fromCourseId: deAnzaMath22.id,
-        toCourseId: umichEECS203.id,
-        status: 'APPROVED',
-        notes: 'Direct equivalent transfer. Both courses cover similar discrete mathematics topics essential for computer science.',
-      },
-    });
-
-    console.log('Created transfer mapping:', mapping);
-    console.log('Seed data has been successfully added.');
-  } catch (error) {
-    console.error('Error during seeding:', error);
-    throw error;
-  }
+  console.log('Seed data created successfully');
 }
 
 main()

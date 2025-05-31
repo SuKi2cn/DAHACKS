@@ -39,19 +39,19 @@ export default function HomePage() {
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        console.log('Fetching schools...');
+        console.log('Fetching schools from frontend...');
         const response = await fetch('/api/schools');
-        const result = await response.json();
-        console.log('Received data:', result);
-        if (response.ok && result.data) {
-          console.log('Setting schools:', result.data.communityColleges, result.data.universities);
-          setCommunityColleges(result.data.communityColleges || []);
-          setUniversities(result.data.universities || []);
-        } else {
-          console.error('Error fetching schools:', result.error);
+        if (!response.ok) {
+          throw new Error('Failed to fetch schools');
+        }
+        const data = await response.json();
+        console.log('Received schools data:', data);
+        if (data.data) {
+          setCommunityColleges(data.data.communityColleges || []);
+          setUniversities(data.data.universities || []);
         }
       } catch (error) {
-        console.error('Error during fetch:', error);
+        console.error('Error fetching schools:', error);
       }
     };
     fetchSchools();
